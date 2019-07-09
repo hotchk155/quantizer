@@ -15429,13 +15429,11 @@ Siemens, Hewlett-Packard, Texas Instuments, Sharp, Motorola&lt;p&gt;
 <part name="SUPPLY30" library="supply2" deviceset="AGND" device=""/>
 <part name="SUPPLY31" library="supply2" deviceset="AGND" device=""/>
 <part name="SUPPLY32" library="supply2" deviceset="AGND" device=""/>
-<part name="GND1" library="supply1" deviceset="GND" device=""/>
 <part name="SUPPLY33" library="supply2" deviceset="+5V" device=""/>
 <part name="E" library="testpad" deviceset="TP" device="B1,27"/>
 <part name="F" library="testpad" deviceset="TP" device="B1,27"/>
 <part name="G" library="testpad" deviceset="TP" device="B1,27"/>
 <part name="C16" library="rcl" deviceset="C-EU" device="C0805"/>
-<part name="GND2" library="supply1" deviceset="GND" device=""/>
 <part name="SUPPLY34" library="supply2" deviceset="AGND" device=""/>
 <part name="SUPPLY35" library="supply2" deviceset="AGND" device=""/>
 <part name="C9" library="rcl" deviceset="C-EU" device="C0805"/>
@@ -15551,6 +15549,8 @@ Siemens, Hewlett-Packard, Texas Instuments, Sharp, Motorola&lt;p&gt;
 <part name="SUPPLY62" library="supply2" deviceset="AGND" device=""/>
 <part name="ICSP" library="pinhead" deviceset="PINHD-1X5" device=""/>
 <part name="PB4" library="testpad" deviceset="TP" device="B1,27"/>
+<part name="SUPPLY63" library="supply2" deviceset="AGND" device=""/>
+<part name="SUPPLY64" library="supply2" deviceset="AGND" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -15695,13 +15695,11 @@ above 0 for MCU ADC ins)</text>
 <instance part="SUPPLY30" gate="G$1" x="-167.64" y="-30.48"/>
 <instance part="SUPPLY31" gate="G$1" x="-220.98" y="53.34"/>
 <instance part="SUPPLY32" gate="G$1" x="-220.98" y="99.06"/>
-<instance part="GND1" gate="1" x="-256.54" y="-25.4"/>
 <instance part="SUPPLY33" gate="+5V" x="-256.54" y="10.16"/>
 <instance part="E" gate="G$1" x="-144.78" y="114.3"/>
 <instance part="F" gate="G$1" x="-144.78" y="68.58"/>
 <instance part="G" gate="G$1" x="-238.76" y="0"/>
 <instance part="C16" gate="G$1" x="-246.38" y="-15.24"/>
-<instance part="GND2" gate="1" x="-246.38" y="-25.4"/>
 <instance part="SUPPLY34" gate="G$1" x="-63.5" y="269.24"/>
 <instance part="SUPPLY35" gate="G$1" x="35.56" y="269.24"/>
 <instance part="C9" gate="G$1" x="30.48" y="299.72" rot="R270"/>
@@ -15833,6 +15831,8 @@ above 0 for MCU ADC ins)</text>
 <attribute name="NAME" x="-54.61" y="21.59" size="1.778" layer="95" rot="R270"/>
 <attribute name="TP_SIGNAL_NAME" x="-54.61" y="24.13" size="1.778" layer="97" rot="R180"/>
 </instance>
+<instance part="SUPPLY63" gate="G$1" x="-256.54" y="-25.4"/>
+<instance part="SUPPLY64" gate="G$1" x="-246.38" y="-25.4"/>
 </instances>
 <busses>
 </busses>
@@ -16485,16 +16485,6 @@ above 0 for MCU ADC ins)</text>
 </net>
 <net name="GND" class="0">
 <segment>
-<pinref part="POT1" gate="G$1" pin="A"/>
-<pinref part="GND1" gate="1" pin="GND"/>
-<wire x1="-256.54" y1="-17.78" x2="-256.54" y2="-22.86" width="0.1524" layer="91"/>
-</segment>
-<segment>
-<pinref part="GND2" gate="1" pin="GND"/>
-<pinref part="C16" gate="G$1" pin="2"/>
-<wire x1="-246.38" y1="-22.86" x2="-246.38" y2="-20.32" width="0.1524" layer="91"/>
-</segment>
-<segment>
 <pinref part="C31" gate="G$1" pin="-"/>
 <wire x1="-48.26" y1="401.32" x2="-48.26" y2="396.24" width="0.1524" layer="91"/>
 <pinref part="C33" gate="G$1" pin="-"/>
@@ -17027,6 +17017,16 @@ above 0 for MCU ADC ins)</text>
 <wire x1="-195.58" y1="200.66" x2="-187.96" y2="200.66" width="0.1524" layer="91"/>
 <wire x1="-187.96" y1="200.66" x2="-187.96" y2="198.12" width="0.1524" layer="91"/>
 <pinref part="SUPPLY62" gate="G$1" pin="AGND"/>
+</segment>
+<segment>
+<pinref part="POT1" gate="G$1" pin="A"/>
+<wire x1="-256.54" y1="-17.78" x2="-256.54" y2="-22.86" width="0.1524" layer="91"/>
+<pinref part="SUPPLY63" gate="G$1" pin="AGND"/>
+</segment>
+<segment>
+<pinref part="C16" gate="G$1" pin="2"/>
+<wire x1="-246.38" y1="-22.86" x2="-246.38" y2="-20.32" width="0.1524" layer="91"/>
+<pinref part="SUPPLY64" gate="G$1" pin="AGND"/>
 </segment>
 </net>
 <net name="ADC_CSEL" class="0">
