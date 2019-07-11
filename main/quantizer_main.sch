@@ -19168,9 +19168,9 @@ above 0 for MCU ADC ins)</text>
 <instance part="F" gate="G$1" x="-144.78" y="68.58"/>
 <instance part="G" gate="G$1" x="-238.76" y="0"/>
 <instance part="C16" gate="G$1" x="-246.38" y="-15.24"/>
-<instance part="SUPPLY34" gate="G$1" x="-63.5" y="269.24"/>
-<instance part="SUPPLY35" gate="G$1" x="35.56" y="269.24"/>
-<instance part="C9" gate="G$1" x="30.48" y="299.72" rot="R270"/>
+<instance part="SUPPLY34" gate="G$1" x="-60.96" y="269.24"/>
+<instance part="SUPPLY35" gate="G$1" x="15.24" y="269.24"/>
+<instance part="C9" gate="G$1" x="10.16" y="299.72" rot="R270"/>
 <instance part="C10" gate="G$1" x="-53.34" y="299.72" rot="R270"/>
 <instance part="C11" gate="G$1" x="7.62" y="287.02"/>
 <instance part="GND4" gate="1" x="2.54" y="269.24"/>
@@ -19908,7 +19908,7 @@ above 0 for MCU ADC ins)</text>
 <wire x1="-5.08" y1="299.72" x2="0" y2="299.72" width="0.1524" layer="91"/>
 <wire x1="0" y1="299.72" x2="0" y2="312.42" width="0.1524" layer="91"/>
 <pinref part="C9" gate="G$1" pin="2"/>
-<wire x1="0" y1="299.72" x2="25.4" y2="299.72" width="0.1524" layer="91"/>
+<wire x1="0" y1="299.72" x2="5.08" y2="299.72" width="0.1524" layer="91"/>
 <junction x="0" y="299.72"/>
 <pinref part="IC3" gate="G$1" pin="REFCAP"/>
 <wire x1="-5.08" y1="292.1" x2="0" y2="292.1" width="0.1524" layer="91"/>
@@ -20165,27 +20165,27 @@ above 0 for MCU ADC ins)</text>
 <net name="AGND" class="0">
 <segment>
 <pinref part="IC3" gate="G$1" pin="AGND1"/>
-<wire x1="-43.18" y1="302.26" x2="-63.5" y2="302.26" width="0.1524" layer="91"/>
-<wire x1="-63.5" y1="302.26" x2="-63.5" y2="299.72" width="0.1524" layer="91"/>
+<wire x1="-43.18" y1="302.26" x2="-60.96" y2="302.26" width="0.1524" layer="91"/>
+<wire x1="-60.96" y1="302.26" x2="-60.96" y2="299.72" width="0.1524" layer="91"/>
 <pinref part="C10" gate="G$1" pin="2"/>
-<wire x1="-63.5" y1="299.72" x2="-58.42" y2="299.72" width="0.1524" layer="91"/>
+<wire x1="-60.96" y1="299.72" x2="-58.42" y2="299.72" width="0.1524" layer="91"/>
 <pinref part="SUPPLY34" gate="G$1" pin="AGND"/>
-<wire x1="-63.5" y1="271.78" x2="-63.5" y2="299.72" width="0.1524" layer="91"/>
-<junction x="-63.5" y="299.72"/>
+<wire x1="-60.96" y1="271.78" x2="-60.96" y2="299.72" width="0.1524" layer="91"/>
+<junction x="-60.96" y="299.72"/>
 </segment>
 <segment>
 <pinref part="IC3" gate="G$1" pin="AGND2"/>
-<wire x1="-5.08" y1="302.26" x2="35.56" y2="302.26" width="0.1524" layer="91"/>
-<wire x1="35.56" y1="302.26" x2="35.56" y2="299.72" width="0.1524" layer="91"/>
+<wire x1="-5.08" y1="302.26" x2="15.24" y2="302.26" width="0.1524" layer="91"/>
+<wire x1="15.24" y1="302.26" x2="15.24" y2="299.72" width="0.1524" layer="91"/>
 <pinref part="C9" gate="G$1" pin="1"/>
-<wire x1="35.56" y1="299.72" x2="33.02" y2="299.72" width="0.1524" layer="91"/>
+<wire x1="15.24" y1="299.72" x2="12.7" y2="299.72" width="0.1524" layer="91"/>
 <pinref part="SUPPLY35" gate="G$1" pin="AGND"/>
-<wire x1="35.56" y1="299.72" x2="35.56" y2="297.18" width="0.1524" layer="91"/>
-<junction x="35.56" y="299.72"/>
+<wire x1="15.24" y1="299.72" x2="15.24" y2="297.18" width="0.1524" layer="91"/>
+<junction x="15.24" y="299.72"/>
 <pinref part="IC3" gate="G$1" pin="AGND3"/>
-<wire x1="35.56" y1="297.18" x2="35.56" y2="271.78" width="0.1524" layer="91"/>
-<wire x1="-5.08" y1="297.18" x2="35.56" y2="297.18" width="0.1524" layer="91"/>
-<junction x="35.56" y="297.18"/>
+<wire x1="15.24" y1="297.18" x2="15.24" y2="271.78" width="0.1524" layer="91"/>
+<wire x1="-5.08" y1="297.18" x2="15.24" y2="297.18" width="0.1524" layer="91"/>
+<junction x="15.24" y="297.18"/>
 </segment>
 <segment>
 <pinref part="PWR" gate="A" pin="3"/>
