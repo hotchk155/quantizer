@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chips chipVendor="NXP" family="KE0x" vendorURL="http://www.nxp.com" chipURL="">
+   <chip name="MKE02Z64xxx4" xml_file="MKE02Z4_internal.xml" chipURL=""/>
+</chips>
