@@ -18936,7 +18936,7 @@ EAGLE CAD Libraries on element14&lt;/a&gt;</description>
 <part name="R38" library="rcl" deviceset="R-EU_" device="R0805"/>
 <part name="R39" library="rcl" deviceset="R-EU_" device="R0805"/>
 <part name="SUPPLY47" library="supply2" deviceset="AGND" device=""/>
-<part name="C21" library="rcl" deviceset="C-EU" device="C0805"/>
+<part name="C21" library="rcl" deviceset="C-EU" device="C0805" value="10n"/>
 <part name="SUPPLY45" library="supply2" deviceset="AGND" device=""/>
 <part name="SUPPLY48" library="supply2" deviceset="AGND" device=""/>
 <part name="SUPPLY49" library="supply2" deviceset="+5V" device=""/>
