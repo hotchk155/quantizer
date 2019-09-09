@@ -77,3 +77,8 @@ old/*.*
 Backup_of_*.cdr
 
 cvocfg/node_modules
+
+##############
+## MCUExpresso
+##############
+*.log

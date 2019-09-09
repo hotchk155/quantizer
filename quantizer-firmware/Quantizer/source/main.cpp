@@ -45,6 +45,7 @@
 #include "digital_out.h"
 #include "clock.h"
 #include "apa102.h"
+#include "adc_dac.h"
 #include "ui.h"
 
 /* TODO: insert other include files here. */
@@ -70,7 +71,6 @@ static volatile bool slaveFinished = false;
 
 int main(void)
 {
-    spi_master_config_t masterConfig = {0};
     uint32_t sourceClock = 0U;
 //    uint32_t i = 0U;
 //    uint32_t err = 0U;
@@ -87,6 +87,7 @@ int main(void)
 
     g_clock.init();
     g_apa102.init();
+    g_adc_dac.init();
 
     uint32_t xx[32] = {
     		KEY_GRID,
@@ -109,7 +110,15 @@ int main(void)
     		KEY_B
     };
     int q=0;
+    int ii=0;
     while(1) {
+    	g_adc_dac.set_dac(0, ii);
+    	g_adc_dac.set_dac(1, ii);
+    	g_adc_dac.set_dac(2, ii);
+    	g_adc_dac.set_dac(3, ii);
+    	g_adc_dac.update_dac();
+    	ii=ii+100;
+    	if(ii>65535) ii=0;
     	g_pin_trigout.set(q);
     	g_pin_led0.set(q);
     	g_pin_led1.set(!q);
