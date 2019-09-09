@@ -12,6 +12,7 @@
 //DAC MAX5134
 
 
+#define BITA_DAC_LDAC		MK_GPIOA_BIT(PORTD_BASE, 6)
 #define BITA_ADC_CSEL		MK_GPIOA_BIT(PORTD_BASE, 3)
 #define BITA_ADC_SSTP		MK_GPIOA_BIT(PORTD_BASE, 4)
 #define BITA_DAC_CSEL		MK_GPIOA_BIT(PORTA_BASE, 6)
@@ -22,6 +23,7 @@ CDigitalIn<kGPIO_PORTD, 4> g_adc_sstp;
 
 CDigitalOut<kGPIO_PORTA, 6, 1> g_dac_csel; // initially high
 CDigitalIn<kGPIO_PORTA, 7> g_dac_ready;
+CDigitalOut<kGPIO_PORTD, 6, 0> g_dac_ldac;
 
 class CAdcDac {
 public:
@@ -81,8 +83,10 @@ private:
 			m_tx_buf[m_tx_size++] =  0x11; // write through DAC0
 			m_tx_buf[m_tx_size++] =  m_dac[0]>>8;
 			m_tx_buf[m_tx_size++] =  (byte)m_dac[0];
+			m_tx_buf[m_tx_size++] =  0;
 			m_prev_dac[0] = m_dac[0];
 		}
+		/*
 		if(m_dac[1] != m_prev_dac[1]) {
 			m_tx_buf[m_tx_size++] =  0x12; // write through DAC1
 			m_tx_buf[m_tx_size++] =  m_dac[1]>>8;
@@ -100,7 +104,7 @@ private:
 			m_tx_buf[m_tx_size++] =  m_dac[3]>>8;
 			m_tx_buf[m_tx_size++] =  (byte)m_dac[3];
 			m_prev_dac[3] = m_dac[3];
-		}
+		}*/
 		return m_tx_size;
 	}
 
@@ -112,6 +116,9 @@ public:
 		m_tx_size = 0;
 	}
 	inline void update_dac() {
+		// SPI_C1_SPTIE_MASK bit 5
+		// SPI_C1_SPIE_MASK bit 7
+	    //SPI1->C1 |= (SPI_C1_SPTIE_MASK|SPI_C1_SPIE_MASK);
 	    SPI1->C1 |= SPI_C1_SPTIE_MASK;
 	}
 
@@ -148,6 +155,7 @@ public:
 	    spi_master_config_t masterConfig = {0};
 		SPI_MasterGetDefaultConfig(&masterConfig);
 	    masterConfig.polarity = kSPI_ClockPolarityActiveLow;
+		//masterConfig.phase = kSPI_ClockPhaseSecondEdge;
 	    SPI_MasterInit(SPI1, &masterConfig, CLOCK_GetFreq(kCLOCK_BusClk));
 
 
@@ -179,6 +187,8 @@ public:
 */
 
 	// called when transmit buffer empty
+	// this is when data is loaded to SPI output shift register but
+	// it has not been sent out yet!
 	inline void tx_empty_irq() {
 		if(m_tx_index < m_tx_size) {
 			SPI1->D = m_tx_buf[m_tx_index++];
@@ -187,10 +197,24 @@ public:
 			csel(DEV_DAC);
 			SPI1->D = m_tx_buf[m_tx_index++];
 		}
+		//else if(m_tx_index == m_tx_size){
+    	  //  m_tx_index++;
+		//}
 		else {
     	    SPI1->C1 &= ~SPI_C1_SPTIE_MASK;
 			csel(DEV_NONE);
 		}
+	}
+
+	// called when receive buffer full
+	// this is when SPI output shift register has finished sending
+	inline void rx_full_irq() {
+		/*
+		if(m_tx_index > m_tx_size) {
+    	    //SPI1->C1 &= ~SPI_C1_SPTIE_MASK;
+			csel(DEV_NONE);
+		}
+		*/
 	}
 
 };
@@ -208,8 +232,11 @@ extern "C" void SPI1_IRQHandler(void)
     if (SPI1->S & SPI_S_SPTEF_MASK) {
     	g_adc_dac.tx_empty_irq();
     }
-
-
+    /*
+    if(SPI1->S & SPI_S_SPRF_MASK) {
+    	g_adc_dac.rx_full_irq();
+    }
+*/
 
 
 	/*

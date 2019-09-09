@@ -71,7 +71,7 @@ static volatile bool slaveFinished = false;
 
 int main(void)
 {
-    uint32_t sourceClock = 0U;
+   uint32_t sourceClock = 0U;
 //    uint32_t i = 0U;
 //    uint32_t err = 0U;
 
@@ -119,6 +119,8 @@ int main(void)
     	g_adc_dac.update_dac();
     	ii=ii+100;
     	if(ii>65535) ii=0;
+		g_clock.wait_ms(1);
+    }/*
     	g_pin_trigout.set(q);
     	g_pin_led0.set(q);
     	g_pin_led1.set(!q);
@@ -130,7 +132,7 @@ int main(void)
 			g_apa102.set(i, (k&(xx[i]))? 0x70:0);
 		}
 		g_apa102.refresh();
-    }
+    }*/
 
     while (1)
     {
