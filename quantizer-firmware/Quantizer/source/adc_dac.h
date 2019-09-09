@@ -155,6 +155,7 @@ public:
 	    spi_master_config_t masterConfig = {0};
 		SPI_MasterGetDefaultConfig(&masterConfig);
 	    masterConfig.polarity = kSPI_ClockPolarityActiveLow;
+	    masterConfig.baudRate_Bps = 1000000U;
 		//masterConfig.phase = kSPI_ClockPhaseSecondEdge;
 	    SPI_MasterInit(SPI1, &masterConfig, CLOCK_GetFreq(kCLOCK_BusClk));
 
@@ -197,11 +198,12 @@ public:
 			csel(DEV_DAC);
 			SPI1->D = m_tx_buf[m_tx_index++];
 		}
-		//else if(m_tx_index == m_tx_size){
+		//else if(m_tx_index >= m_tx_size){
+
     	  //  m_tx_index++;
 		//}
 		else {
-    	    SPI1->C1 &= ~SPI_C1_SPTIE_MASK;
+			SPI1->C1 &= ~SPI_C1_SPTIE_MASK;
 			csel(DEV_NONE);
 		}
 	}
@@ -209,12 +211,12 @@ public:
 	// called when receive buffer full
 	// this is when SPI output shift register has finished sending
 	inline void rx_full_irq() {
-		/*
-		if(m_tx_index > m_tx_size) {
+		volatile byte ch = SPI1->D; // need to read byte to clear interrupt
+		volatile byte ch2 = SPI1->S; // need to read byte to clear interrupt
+		//if(m_tx_index > m_tx_size) {
     	    //SPI1->C1 &= ~SPI_C1_SPTIE_MASK;
 			csel(DEV_NONE);
-		}
-		*/
+		//}
 	}
 
 };
@@ -228,12 +230,13 @@ CAdcDac g_adc_dac;
 
 extern "C" void SPI1_IRQHandler(void)
 {
+	//byte q = SPI1->S;
 //    if ((SPI_GetStatusFlags(EXAMPLE_SPI_MASTER) & kSPI_TxBufferEmptyFlag) && g_leds.is_tx_pending()) {
     if (SPI1->S & SPI_S_SPTEF_MASK) {
     	g_adc_dac.tx_empty_irq();
     }
-    /*
-    if(SPI1->S & SPI_S_SPRF_MASK) {
+/*
+    if(q & SPI_S_SPRF_MASK) {
     	g_adc_dac.rx_full_irq();
     }
 */
