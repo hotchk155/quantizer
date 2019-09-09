@@ -66,13 +66,16 @@ private:
 	}
 
 	enum {
-		MAX_TX_BUF = 32
+		MAX_TX_BUF = 32,
+		SELECT_DAC = 0x100,
+		DESELECT_DAC = 0x200
 	};
 	DAC_VALUE m_dac[4];
 	volatile DAC_VALUE m_prev_dac[4];
-	volatile byte m_tx_buf[MAX_TX_BUF];
+	volatile uint16_t m_tx_buf[MAX_TX_BUF];
 	volatile int m_tx_index;
 	volatile int m_tx_size;
+	volatile byte m_dac_deselect;
 
 
 	// Prepare data for the DAC
@@ -80,10 +83,10 @@ private:
 		m_tx_index = 0;
 		m_tx_size = 0;
 		if(m_dac[0] != m_prev_dac[0]) {
-			m_tx_buf[m_tx_size++] =  0x11; // write through DAC0
+			m_tx_buf[m_tx_size++] =  SELECT_DAC|0x11; // write through DAC0
 			m_tx_buf[m_tx_size++] =  m_dac[0]>>8;
 			m_tx_buf[m_tx_size++] =  (byte)m_dac[0];
-			m_tx_buf[m_tx_size++] =  0;
+			m_tx_buf[m_tx_size++] =  DESELECT_DAC;
 			m_prev_dac[0] = m_dac[0];
 		}
 		/*
@@ -114,6 +117,7 @@ public:
 		memset((void*)m_prev_dac, 0, sizeof m_prev_dac);
 		m_tx_index = 0;
 		m_tx_size = 0;
+		m_dac_deselect = 0;
 	}
 	inline void update_dac() {
 		// SPI_C1_SPTIE_MASK bit 5
@@ -191,32 +195,26 @@ public:
 	// this is when data is loaded to SPI output shift register but
 	// it has not been sent out yet!
 	inline void tx_empty_irq() {
+		if(m_dac_deselect) {
+			csel(DEV_NONE);
+			m_dac_deselect = 0;
+		}
+		if(m_tx_index >= m_tx_size) {
+			prepare_dac_tx();
+		}
 		if(m_tx_index < m_tx_size) {
-			SPI1->D = m_tx_buf[m_tx_index++];
+			uint16_t cmd = m_tx_buf[m_tx_index++];
+			if(cmd & SELECT_DAC) {
+				csel(DEV_DAC);
+			}
+			SPI1->D = (byte)cmd;
+			if(cmd & DESELECT_DAC) {
+				m_dac_deselect = 1;
+			}
 		}
-		else if(prepare_dac_tx()) {
-			csel(DEV_DAC);
-			SPI1->D = m_tx_buf[m_tx_index++];
-		}
-		//else if(m_tx_index >= m_tx_size){
-
-    	  //  m_tx_index++;
-		//}
 		else {
 			SPI1->C1 &= ~SPI_C1_SPTIE_MASK;
-			csel(DEV_NONE);
 		}
-	}
-
-	// called when receive buffer full
-	// this is when SPI output shift register has finished sending
-	inline void rx_full_irq() {
-		volatile byte ch = SPI1->D; // need to read byte to clear interrupt
-		volatile byte ch2 = SPI1->S; // need to read byte to clear interrupt
-		//if(m_tx_index > m_tx_size) {
-    	    //SPI1->C1 &= ~SPI_C1_SPTIE_MASK;
-			csel(DEV_NONE);
-		//}
 	}
 
 };
