@@ -44,11 +44,11 @@ private:
 
 	enum {
 		ST_BEGIN,
-		ST_DAC1,
-		ST_DAC2,
-		ST_DAC3,
-		ST_DAC4,
-		ST_DAC5
+		ST_DAC_DATA1,
+		ST_DAC_DATA2,
+		ST_DAC_DATA3,
+		ST_DAC_WAIT1,
+		ST_DAC_WAIT2
 	};
 
 	/*
@@ -199,34 +199,20 @@ public:
 			m_dac[which] = value;
 		}
 	}
-	inline void rx_full_irq() {
-		switch(m_state) {
-		case ST_DAC4:
-			m_state = ST_DAC5;
-			break;
-		case ST_DAC5:
-			if(++m_chan > NUM_DAC_CHANNELS) {
-				m_chan = 0;
-			}
-			m_state = ST_DAC1;
-		    SPI1->C1 |= SPI_C1_SPTIE_MASK;
-		    break;
-		}
-	}
+
 
 	// called when transmit buffer empty
 	// this is when data is loaded to SPI output shift register but
 	// it has not been sent out yet!
 	inline void tx_empty_irq() {
-
 		switch(m_state) {
 			case ST_BEGIN:
 				m_chan = 0;
-				m_state = ST_DAC1;
+				m_state = ST_DAC_DATA1;
 				// fall thru
 
 			/////////////////////////////////////////////////////////////////////
-			case ST_DAC1:
+			case ST_DAC_DATA1:
 
 				// deselect DAC
 				csel(DEV_NONE);
@@ -243,22 +229,37 @@ public:
 				// select DAC
 				csel(DEV_DAC);
 				SPI1->D = (uint8_t)(m_dac_tx>>16);
-				m_state = ST_DAC2;
+				m_state = ST_DAC_DATA2;
 				break;
-			case ST_DAC2:
+			case ST_DAC_DATA2:
 				SPI1->D = (uint8_t)(m_dac_tx>>8);
-				m_state = ST_DAC3;
+				m_state = ST_DAC_DATA3;
 				break;
-			case ST_DAC3:
+			case ST_DAC_DATA3:
 				SPI1->D = (uint8_t)(m_dac_tx);
-				m_state = ST_DAC4;
+				m_state = ST_DAC_WAIT1;
 				break;
-			case ST_DAC4:
+			case ST_DAC_WAIT1:
 			    SPI1->C1 &= ~SPI_C1_SPTIE_MASK;
+				m_state = ST_DAC_WAIT2;
 				break;
-			}
 		}
+	}
 
+	inline void rx_full_irq() {
+		switch(m_state) {
+		case ST_DAC_WAIT1:
+			m_state = ST_DAC_WAIT2;
+			break;
+		case ST_DAC_WAIT2:
+			if(++m_chan > NUM_DAC_CHANNELS) {
+				m_chan = 0;
+			}
+			m_state = ST_DAC_DATA1;
+		    SPI1->C1 |= SPI_C1_SPTIE_MASK;
+		    break;
+		}
+	}
 
 /*
 		if(m_dac_deselect) {
