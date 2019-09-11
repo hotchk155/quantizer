@@ -33,12 +33,22 @@ private:
 	//byte m_buf[BUF_SIZE];
 	//volatile int m_tx_index;
 	//volatile int m_tx_pending;
-	typedef uint16_t DAC_VALUE;
+	typedef uint32_t DAC_VALUE;
 
 	enum {
 		DEV_NONE,
 		DEV_ADC,
 		DEV_DAC
+	};
+
+
+	enum {
+		ST_BEGIN,
+		ST_DAC1,
+		ST_DAC2,
+		ST_DAC3,
+		ST_DAC4,
+		ST_DAC5
 	};
 
 	/*
@@ -66,19 +76,23 @@ private:
 	}
 
 	enum {
-		MAX_TX_BUF = 32,
-		SELECT_DAC = 0x100,
-		DESELECT_DAC = 0x200
+		NUM_DAC_CHANNELS = 4,
+		//MAX_TX_BUF = 32,
+		//SELECT_DAC = 0x100,
+		//DESELECT_DAC = 0x200
 	};
-	DAC_VALUE m_dac[4];
-	volatile DAC_VALUE m_prev_dac[4];
-	volatile uint16_t m_tx_buf[MAX_TX_BUF];
-	volatile int m_tx_index;
-	volatile int m_tx_size;
-	volatile byte m_dac_deselect;
-
+	uint32_t m_dac[4]; // the lowest 16 bits are DAC value.. bit 16 is a "ready" flag
+	volatile uint16_t m_prev_dac[4];
+	//volatile uint16_t m_tx_buf[MAX_TX_BUF];
+	//volatile int m_tx_index;
+	//volatile int m_tx_size;
+	//volatile byte m_dac_deselect;
+	volatile uint32_t m_dac_tx;
+	volatile int m_state;
+	volatile int m_chan;
 
 	// Prepare data for the DAC
+	/*
 	int prepare_dac_tx() {
 		m_tx_index = 0;
 		m_tx_size = 0;
@@ -111,28 +125,39 @@ private:
 			m_prev_dac[3] = m_dac[3];
 		}
 		return m_tx_size;
-	}
+	}*/
 
 public:
 	CAdcDac() {
 		memset(m_dac, 0, sizeof m_dac);
 		memset((void*)m_prev_dac, 0, sizeof m_prev_dac);
-		m_tx_index = 0;
-		m_tx_size = 0;
-		m_dac_deselect = 0;
+//		m_tx_index = 0;
+//		m_tx_size = 0;
+		m_dac_tx = 0;
+//		m_dac_deselect = 0;
+		m_state = ST_BEGIN;
 	}
+
+
+	/*
+	 	 MODE control byte 0xA8 = 0b10101000 = internal clock
+	 	 Input config 	1ccc0rrr
+	 	 conversion start 1ccc0000
+
+	 	 ccc = channel 0-7
+
+
+	 	 rrr = 111 = -Vref to +Vref (default)
+	 	       110 = 0 to Vref
+	 */
+	void init_adc() {
+
+	}
+
 	inline void update_dac() {
 	    SPI1->C1 |= SPI_C1_SPTIE_MASK;
 	}
 
-	inline void set_dac(byte which, DAC_VALUE value, byte update = 0) {
-		if(which<4) {
-			m_dac[which] = value;
-		}
-		if(update) {
-			update_dac();
-		}
-	}
 
 
 
@@ -169,10 +194,73 @@ public:
 
 	}
 
+	inline void set_dac(byte which, uint16_t value, byte update = 0) {
+		if(which<4) {
+			m_dac[which] = value;
+		}
+	}
+	inline void rx_full_irq() {
+		switch(m_state) {
+		case ST_DAC4:
+			m_state = ST_DAC5;
+			break;
+		case ST_DAC5:
+			if(++m_chan > NUM_DAC_CHANNELS) {
+				m_chan = 0;
+			}
+			m_state = ST_DAC1;
+		    SPI1->C1 |= SPI_C1_SPTIE_MASK;
+		    break;
+		}
+	}
+
 	// called when transmit buffer empty
 	// this is when data is loaded to SPI output shift register but
 	// it has not been sent out yet!
 	inline void tx_empty_irq() {
+
+		switch(m_state) {
+			case ST_BEGIN:
+				m_chan = 0;
+				m_state = ST_DAC1;
+				// fall thru
+
+			/////////////////////////////////////////////////////////////////////
+			case ST_DAC1:
+
+				// deselect DAC
+				csel(DEV_NONE);
+
+				// form the data word to be sent (3 bytes used)
+				if(m_dac[m_chan] != m_prev_dac[m_chan]) {
+					m_dac_tx = ((uint32_t)(0x10|m_chan)<<16)|m_dac[m_chan];
+					m_prev_dac[m_chan] = m_dac[m_chan];
+				}
+				else {
+					m_dac_tx = 0x00200000; // NOOP
+				}
+
+				// select DAC
+				csel(DEV_DAC);
+				SPI1->D = (uint8_t)(m_dac_tx>>16);
+				m_state = ST_DAC2;
+				break;
+			case ST_DAC2:
+				SPI1->D = (uint8_t)(m_dac_tx>>8);
+				m_state = ST_DAC3;
+				break;
+			case ST_DAC3:
+				SPI1->D = (uint8_t)(m_dac_tx);
+				m_state = ST_DAC4;
+				break;
+			case ST_DAC4:
+			    SPI1->C1 &= ~SPI_C1_SPTIE_MASK;
+				break;
+			}
+		}
+
+
+/*
 		if(m_dac_deselect) {
 			csel(DEV_NONE);
 			m_dac_deselect = 0;
@@ -193,7 +281,7 @@ public:
 		else {
 			SPI1->C1 &= ~SPI_C1_SPTIE_MASK;
 		}
-	}
+	}*/
 
 };
 
@@ -206,16 +294,16 @@ CAdcDac g_adc_dac;
 
 extern "C" void SPI1_IRQHandler(void)
 {
-	//byte q = SPI1->S;
+	byte q = SPI1->S;
 //    if ((SPI_GetStatusFlags(EXAMPLE_SPI_MASTER) & kSPI_TxBufferEmptyFlag) && g_leds.is_tx_pending()) {
-    if (SPI1->S & SPI_S_SPTEF_MASK) {
+    if (q & SPI_S_SPTEF_MASK) {
     	g_adc_dac.tx_empty_irq();
     }
-/*
+
     if(q & SPI_S_SPRF_MASK) {
     	g_adc_dac.rx_full_irq();
     }
-*/
+
 
 
 	/*

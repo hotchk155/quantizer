@@ -115,13 +115,13 @@ int main(void)
 	g_apa102.refresh();
 
     while(1) {
-    	ii ^=1;
+    	//ii ^=1;
     	g_adc_dac.set_dac(0, ii);
     	g_adc_dac.set_dac(1, ii);
     	g_adc_dac.set_dac(2, ii);
     	g_adc_dac.set_dac(3, ii);
     	g_adc_dac.update_dac();
-    	//ii=ii+100;
+    	ii=ii+100;
     	if(ii>65535) ii=0;
 		g_clock.wait_ms(1);
     }/*
