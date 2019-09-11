@@ -89,25 +89,27 @@ private:
 			m_tx_buf[m_tx_size++] =  DESELECT_DAC;
 			m_prev_dac[0] = m_dac[0];
 		}
-		/*
 		if(m_dac[1] != m_prev_dac[1]) {
-			m_tx_buf[m_tx_size++] =  0x12; // write through DAC1
+			m_tx_buf[m_tx_size++] =  SELECT_DAC|0x12; // write through DAC1
 			m_tx_buf[m_tx_size++] =  m_dac[1]>>8;
 			m_tx_buf[m_tx_size++] =  (byte)m_dac[1];
+			m_tx_buf[m_tx_size++] =  DESELECT_DAC;
 			m_prev_dac[1] = m_dac[1];
 		}
 		if(m_dac[2] != m_prev_dac[2]) {
-			m_tx_buf[m_tx_size++] =  0x14; // write through DAC2
+			m_tx_buf[m_tx_size++] =  SELECT_DAC|0x14; // write through DAC2
 			m_tx_buf[m_tx_size++] =  m_dac[2]>>8;
 			m_tx_buf[m_tx_size++] =  (byte)m_dac[2];
+			m_tx_buf[m_tx_size++] =  DESELECT_DAC;
 			m_prev_dac[2] = m_dac[2];
 		}
 		if(m_dac[3] != m_prev_dac[3]) {
-			m_tx_buf[m_tx_size++] =  0x18; // write through DAC3
+			m_tx_buf[m_tx_size++] =  SELECT_DAC|0x18; // write through DAC3
 			m_tx_buf[m_tx_size++] =  m_dac[3]>>8;
 			m_tx_buf[m_tx_size++] =  (byte)m_dac[3];
+			m_tx_buf[m_tx_size++] =  DESELECT_DAC;
 			m_prev_dac[3] = m_dac[3];
-		}*/
+		}
 		return m_tx_size;
 	}
 
@@ -120,9 +122,6 @@ public:
 		m_dac_deselect = 0;
 	}
 	inline void update_dac() {
-		// SPI_C1_SPTIE_MASK bit 5
-		// SPI_C1_SPIE_MASK bit 7
-	    //SPI1->C1 |= (SPI_C1_SPTIE_MASK|SPI_C1_SPIE_MASK);
 	    SPI1->C1 |= SPI_C1_SPTIE_MASK;
 	}
 
@@ -169,27 +168,6 @@ public:
 
 
 	}
-	/*
-	void refresh() {
-		tx_prep();
-   	    SPI0->C1 |= SPI_C1_SPTIE_MASK;
-	}
-	void tx_prep() {
-		memcpy(m_tx_buf, m_buf, sizeof m_tx_buf);
-		m_tx_index = 0;
-		m_tx_pending = 0;
-	}
-	inline int is_tx_pending() {
-		return m_tx_pending;
-	}
-	inline int is_tx_in_progress() {
-		return m_tx_index < BUF_SIZE;
-	}
-	inline byte get_tx_byte() {
-		return m_tx_buf[m_tx_index++];
-	}
-
-*/
 
 	// called when transmit buffer empty
 	// this is when data is loaded to SPI output shift register but
