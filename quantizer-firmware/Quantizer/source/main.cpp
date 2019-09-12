@@ -120,7 +120,7 @@ int main(void)
     	g_adc_dac.set_dac(1, ii);
     	g_adc_dac.set_dac(2, ii);
     	g_adc_dac.set_dac(3, ii);
-    	g_adc_dac.update_dac();
+    	//g_adc_dac.update_dac();
     	ii=ii+100;
     	if(ii>65535) ii=0;
 		g_clock.wait_ms(1);

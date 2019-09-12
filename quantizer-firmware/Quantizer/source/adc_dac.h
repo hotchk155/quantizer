@@ -29,10 +29,6 @@ class CAdcDac {
 public:
 private:
 
-//	byte m_tx_buf[BUF_SIZE];
-	//byte m_buf[BUF_SIZE];
-	//volatile int m_tx_index;
-	//volatile int m_tx_pending;
 	typedef uint32_t DAC_VALUE;
 
 	enum {
@@ -41,21 +37,6 @@ private:
 		DEV_DAC
 	};
 
-
-	enum {
-		ST_BEGIN,
-		ST_DAC_DATA1,
-		ST_DAC_DATA2,
-		ST_DAC_DATA3,
-		ST_DAC_WAIT1,
-		ST_DAC_WAIT2
-	};
-
-	/*
-#define SET_GPIOA(mask) ((GPIO_Type *)GPIOA_BASE)->PSOR = (mask)
-#define CLR_GPIOA(mask) ((GPIO_Type *)GPIOA_BASE)->PCOR = (mask)
-#define READ_GPIOA(mask) (((GPIO_Type *)GPIOA_BASE)->PDIR & (mask))
-*/
 	// select either device by pulling its chip select low
 	void csel(int device) {
 
@@ -77,70 +58,50 @@ private:
 
 	enum {
 		NUM_DAC_CHANNELS = 4,
-		//MAX_TX_BUF = 32,
-		//SELECT_DAC = 0x100,
-		//DESELECT_DAC = 0x200
 	};
-	uint32_t m_dac[4]; // the lowest 16 bits are DAC value.. bit 16 is a "ready" flag
-	volatile uint16_t m_prev_dac[4];
-	//volatile uint16_t m_tx_buf[MAX_TX_BUF];
-	//volatile int m_tx_index;
-	//volatile int m_tx_size;
-	//volatile byte m_dac_deselect;
-	volatile uint32_t m_dac_tx;
-	volatile int m_state;
-	volatile int m_chan;
+	DAC_VALUE m_dac[4]; // the lowest 16 bits are DAC value.. bit 16 is a "ready" flag
+	volatile DAC_VALUE m_prev_dac[4];
 
-	// Prepare data for the DAC
-	/*
-	int prepare_dac_tx() {
-		m_tx_index = 0;
-		m_tx_size = 0;
-		if(m_dac[0] != m_prev_dac[0]) {
-			m_tx_buf[m_tx_size++] =  SELECT_DAC|0x11; // write through DAC0
-			m_tx_buf[m_tx_size++] =  m_dac[0]>>8;
-			m_tx_buf[m_tx_size++] =  (byte)m_dac[0];
-			m_tx_buf[m_tx_size++] =  DESELECT_DAC;
-			m_prev_dac[0] = m_dac[0];
-		}
-		if(m_dac[1] != m_prev_dac[1]) {
-			m_tx_buf[m_tx_size++] =  SELECT_DAC|0x12; // write through DAC1
-			m_tx_buf[m_tx_size++] =  m_dac[1]>>8;
-			m_tx_buf[m_tx_size++] =  (byte)m_dac[1];
-			m_tx_buf[m_tx_size++] =  DESELECT_DAC;
-			m_prev_dac[1] = m_dac[1];
-		}
-		if(m_dac[2] != m_prev_dac[2]) {
-			m_tx_buf[m_tx_size++] =  SELECT_DAC|0x14; // write through DAC2
-			m_tx_buf[m_tx_size++] =  m_dac[2]>>8;
-			m_tx_buf[m_tx_size++] =  (byte)m_dac[2];
-			m_tx_buf[m_tx_size++] =  DESELECT_DAC;
-			m_prev_dac[2] = m_dac[2];
-		}
-		if(m_dac[3] != m_prev_dac[3]) {
-			m_tx_buf[m_tx_size++] =  SELECT_DAC|0x18; // write through DAC3
-			m_tx_buf[m_tx_size++] =  m_dac[3]>>8;
-			m_tx_buf[m_tx_size++] =  (byte)m_dac[3];
-			m_tx_buf[m_tx_size++] =  DESELECT_DAC;
-			m_prev_dac[3] = m_dac[3];
-		}
-		return m_tx_size;
-	}*/
+	enum {
+		TX_BUF_SIZE = 16,
+		RX_BUF_SIZE = 16,
+	};
+
+	volatile int m_device;
+
+	volatile uint8_t m_tx[TX_BUF_SIZE];
+	volatile int m_tx_pos;
+	volatile int m_tx_len;
+
+	volatile uint8_t m_rx[TX_BUF_SIZE];
+	volatile int m_rx_len;
+
+	enum {
+		TXN_DAC0,
+		TXN_DAC1,
+		TXN_DAC2,
+		TXN_DAC3
+	};
+
+	volatile int m_txn;
 
 public:
+	int m_done;
 	CAdcDac() {
 		memset(m_dac, 0, sizeof m_dac);
 		memset((void*)m_prev_dac, 0, sizeof m_prev_dac);
-//		m_tx_index = 0;
-//		m_tx_size = 0;
-		m_dac_tx = 0;
-//		m_dac_deselect = 0;
-		m_state = ST_BEGIN;
+		m_device = DEV_DAC;
+		m_tx_pos = 0;
+		m_tx_len = 0;
+		m_rx_len = 0;
+		m_txn = TXN_DAC0;
+		m_done = 0;
+
 	}
 
 
 	/*
-	 	 MODE control byte 0xA8 = 0b10101000 = internal clock
+	 	 MODE control byte 0x88 = 0b10001000 = external clock mode 0
 	 	 Input config 	1ccc0rrr
 	 	 conversion start 1ccc0000
 
@@ -154,19 +115,14 @@ public:
 
 	}
 
-	inline void update_dac() {
+/*	inline void update_dac() {
 	    SPI1->C1 |= SPI_C1_SPTIE_MASK;
-	}
+	}*/
 
 
 
 
 	void init() {
-		//m_tx_index = 0;
-		//m_tx_pending = 0;
-		//int index = 0;
-
-
 	    /* Init SPI master */
 	    /*
 	     * masterConfig->enableStopInWaitMode = false;
@@ -188,9 +144,9 @@ public:
 	    SPI_MasterInit(SPI1, &masterConfig, CLOCK_GetFreq(kCLOCK_BusClk));
 
 
-	    /* Enable interrupt, first enable slave and then master. */
 	    EnableIRQ(SPI1_IRQn);
 
+		SPI1->C1 |= (SPI_C1_SPTIE_MASK|SPI_C1_SPIE_MASK);
 
 	}
 
@@ -201,89 +157,95 @@ public:
 	}
 
 
-	// called when transmit buffer empty
-	// this is when data is loaded to SPI output shift register but
-	// it has not been sent out yet!
-	inline void tx_empty_irq() {
-		switch(m_state) {
-			case ST_BEGIN:
-				m_chan = 0;
-				m_state = ST_DAC_DATA1;
-				// fall thru
 
-			/////////////////////////////////////////////////////////////////////
-			case ST_DAC_DATA1:
-
-				// deselect DAC
-				csel(DEV_NONE);
-
-				// form the data word to be sent (3 bytes used)
-				if(m_dac[m_chan] != m_prev_dac[m_chan]) {
-					m_dac_tx = ((uint32_t)(0x10|m_chan)<<16)|m_dac[m_chan];
-					m_prev_dac[m_chan] = m_dac[m_chan];
-				}
-				else {
-					m_dac_tx = 0x00200000; // NOOP
-				}
-
-				// select DAC
-				csel(DEV_DAC);
-				SPI1->D = (uint8_t)(m_dac_tx>>16);
-				m_state = ST_DAC_DATA2;
-				break;
-			case ST_DAC_DATA2:
-				SPI1->D = (uint8_t)(m_dac_tx>>8);
-				m_state = ST_DAC_DATA3;
-				break;
-			case ST_DAC_DATA3:
-				SPI1->D = (uint8_t)(m_dac_tx);
-				m_state = ST_DAC_WAIT1;
-				break;
-			case ST_DAC_WAIT1:
-			    SPI1->C1 &= ~SPI_C1_SPTIE_MASK;
-				m_state = ST_DAC_WAIT2;
-				break;
-		}
-	}
-
-	inline void rx_full_irq() {
-		switch(m_state) {
-		case ST_DAC_WAIT1:
-			m_state = ST_DAC_WAIT2;
+	void get_tx() {
+		int chan;
+		switch(m_txn) {
+		case TXN_DAC0:
+		case TXN_DAC1:
+		case TXN_DAC2:
+		case TXN_DAC3:
+			m_device = DEV_DAC;
+			chan = m_txn-TXN_DAC0;
+			// form the data word to be sent (3 bytes used)
+			if(m_dac[chan] != m_prev_dac[chan]) {
+				m_tx[0] = 0x10|chan;
+				m_tx[1] = (uint8_t)(m_dac[chan]>>8);
+				m_tx[2] = (uint8_t)(m_dac[chan]);
+			}
+			else {
+				m_tx[0] = 0x20;
+				m_tx[1] = 0x00;
+				m_tx[2] = 0x00;
+			}
+			m_tx_len = 3;
 			break;
-		case ST_DAC_WAIT2:
-			if(++m_chan > NUM_DAC_CHANNELS) {
-				m_chan = 0;
-			}
-			m_state = ST_DAC_DATA1;
-		    SPI1->C1 |= SPI_C1_SPTIE_MASK;
-		    break;
+		}
+	}
+	void handle_rx() {
+		switch(m_txn) {
+		case TXN_DAC0:
+		case TXN_DAC1:
+		case TXN_DAC2:
+			++m_txn;
+			break;
+		case TXN_DAC3:
+			m_txn = TXN_DAC0;
+			break;
 		}
 	}
 
-/*
-		if(m_dac_deselect) {
-			csel(DEV_NONE);
-			m_dac_deselect = 0;
+	// Called when the last transmitted byte has started sending and the
+	// SPI peripheral is ready to queue up a next one
+	inline void tx_ready_irq() {
+
+		// if there is no transaction in progress then we will
+		// kick off the next one
+		if(!m_tx_len) {
+			// select the device
+			csel(m_device);
+
+			// prepare the next transaction and queue the first byte
+			get_tx();
+			m_tx_pos = 1;
+			m_rx_len = 0;
+			SPI1->D = m_tx[0];
 		}
-		if(m_tx_index >= m_tx_size) {
-			prepare_dac_tx();
+		// do we have any more of the current transaction to send out?
+		else if(m_tx_pos < m_tx_len) {
+			// send next byte
+			SPI1->D = m_tx[m_tx_pos++];
 		}
-		if(m_tx_index < m_tx_size) {
-			uint16_t cmd = m_tx_buf[m_tx_index++];
-			if(cmd & SELECT_DAC) {
-				csel(DEV_DAC);
-			}
-			SPI1->D = (byte)cmd;
-			if(cmd & DESELECT_DAC) {
-				m_dac_deselect = 1;
-			}
-		}
+		// this is the final TX ready interrupt we get after all the data
+		// for the transaction has been sent
 		else {
+			// prevent another interrupt until re-enabled by the receive
+			// complete ISR
+			++m_tx_pos;
 			SPI1->C1 &= ~SPI_C1_SPTIE_MASK;
 		}
-	}*/
+	}
 
+	inline void rx_complete_irq() {
+
+		// capture the received byte
+		m_rx[m_rx_len++] = SPI1->D;
+
+		// is the transaction complete?
+		if(m_tx_pos > m_tx_len) {
+			// deselect the device
+			csel(DEV_NONE);
+
+			// handle the response
+			handle_rx();
+
+			// mark transaction as complete
+			m_tx_len = 0;
+
+			// re-enable the transmit buffer empty interrupt
+			SPI1->C1 |= SPI_C1_SPTIE_MASK;
+		}
+	}
 };
 
 CAdcDac g_adc_dac;
@@ -295,27 +257,13 @@ CAdcDac g_adc_dac;
 
 extern "C" void SPI1_IRQHandler(void)
 {
-	byte q = SPI1->S;
-//    if ((SPI_GetStatusFlags(EXAMPLE_SPI_MASTER) & kSPI_TxBufferEmptyFlag) && g_leds.is_tx_pending()) {
-    if (q & SPI_S_SPTEF_MASK) {
-    	g_adc_dac.tx_empty_irq();
+	uint8_t s = SPI1->S;
+    if (s & SPI_S_SPTEF_MASK) {
+    	g_adc_dac.tx_ready_irq();
     }
-
-    if(q & SPI_S_SPRF_MASK) {
-    	g_adc_dac.rx_full_irq();
+    if(s & SPI_S_SPRF_MASK) {
+    	g_adc_dac.rx_complete_irq();
     }
-
-
-
-	/*
-    if (SPI1->S & SPI_S_SPTEF_MASK) {
-    	if(g_apa102.is_tx_in_progress()) {
-    		SPI1->D = g_apa102.get_tx_byte();
-    	}
-    	else {
-    	    SPI1->C1 &= ~SPI_C1_SPTIE_MASK;
-    	}
-    }*/
 }
 
 
