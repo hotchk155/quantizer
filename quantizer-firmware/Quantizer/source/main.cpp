@@ -86,6 +86,8 @@ int main(void)
     //PRINTF("\r\nSPI board to board interrupt master example started!\r\n");
 
     g_clock.init();
+	g_clock.wait_ms(10);
+
     g_apa102.init();
     g_adc_dac.init();
 
@@ -116,10 +118,10 @@ int main(void)
 
     while(1) {
     	//ii ^=1;
-    	g_adc_dac.set_dac(0, ii);
-    	g_adc_dac.set_dac(1, ii);
-    	g_adc_dac.set_dac(2, ii);
-    	g_adc_dac.set_dac(3, ii);
+    	//g_adc_dac.set_dac(0, ii);
+    	//g_adc_dac.set_dac(1, ii);
+    	//g_adc_dac.set_dac(2, ii);
+    	//g_adc_dac.set_dac(3, ii);
     	//g_adc_dac.update_dac();
     	ii=ii+100;
     	if(ii>65535) ii=0;

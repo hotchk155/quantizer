@@ -29,7 +29,8 @@ class CAdcDac {
 public:
 private:
 
-	typedef uint32_t DAC_VALUE;
+	typedef uint16_t DAC_VALUE;
+	typedef uint16_t ADC_VALUE;
 
 	enum {
 		DEV_NONE,
@@ -63,6 +64,9 @@ private:
 	volatile DAC_VALUE m_prev_dac[4];
 	uint8_t m_adc_init[5];
 
+	volatile ADC_VALUE m_adc[4];
+
+
 	enum {
 		TX_BUF_SIZE = 16,
 		RX_BUF_SIZE = 16,
@@ -83,6 +87,10 @@ private:
 		TXN_ADCCFG1,
 		TXN_ADCCFG2,
 		TXN_ADCCFG3,
+		TXN_ADC0,
+		TXN_ADC1,
+		TXN_ADC2,
+		TXN_ADC3,
 		TXN_DAC0,
 		TXN_DAC1,
 		TXN_DAC2,
@@ -103,10 +111,10 @@ public:
 		m_txn = TXN_ADCMODE;
 		m_done = 0;
 		m_adc_init[0] = 0x88;
-		m_adc_init[1] = 0x87;
-		m_adc_init[2] = 0x97;
-		m_adc_init[3] = 0xA7;
-		m_adc_init[4] = 0xB7;
+		m_adc_init[1] = 0x86;
+		m_adc_init[2] = 0x96;
+		m_adc_init[3] = 0xA6;
+		m_adc_init[4] = 0xB6;
 	}
 
 
@@ -150,6 +158,7 @@ public:
 		SPI_MasterGetDefaultConfig(&masterConfig);
 	    masterConfig.polarity = kSPI_ClockPolarityActiveLow;
 	    masterConfig.baudRate_Bps = 1000000U;
+	    masterConfig.outputMode = kSPI_SlaveSelectAsGpio;
 		//masterConfig.phase = kSPI_ClockPhaseSecondEdge;
 	    SPI_MasterInit(SPI1, &masterConfig, CLOCK_GetFreq(kCLOCK_BusClk));
 
@@ -181,6 +190,19 @@ public:
 			m_tx_len = 1;
 			break;
 
+		case TXN_ADC0:
+		case TXN_ADC1:
+		case TXN_ADC2:
+		case TXN_ADC3:
+			m_device = DEV_ADC;
+			idx = m_txn-TXN_ADC0;
+			m_tx[0] = 0x80|(idx<<4);
+			m_tx[1] = 0;
+			m_tx[2] = 0;
+			m_tx[3] = 0;
+			m_tx_len = 4;
+			break;
+
 		///////////////////////////////////////////
 		case TXN_DAC0:
 		case TXN_DAC1:
@@ -204,17 +226,8 @@ public:
 		}
 	}
 	void handle_rx() {
+		int idx;
 		switch(m_txn) {
-
-		///////////////////////////////////////////
-		case TXN_DAC0:
-		case TXN_DAC1:
-		case TXN_DAC2:
-			++m_txn;
-			break;
-		case TXN_DAC3:
-			m_txn = TXN_DAC0;
-			break;
 
 		///////////////////////////////////////////
 		case TXN_ADCMODE:
@@ -224,10 +237,36 @@ public:
 			++m_txn;
 			break;
 		case TXN_ADCCFG3:
-			m_txn = TXN_ADCMODE;
+			m_txn = TXN_ADC0;
 			break;
 
+		///////////////////////////////////////////
+		case TXN_ADC0:
+		case TXN_ADC1:
+		case TXN_ADC2:
+		case TXN_ADC3:
+			idx=m_txn-TXN_ADC0;
+			m_dac[idx] = (((ADC_VALUE)m_rx[2])<<8)|m_rx[3];
+			if(m_txn == TXN_ADC3) {
+				m_txn = TXN_ADC0;
+			}
+			else {
+				++m_txn;
+			}
+			break;
+
+		///////////////////////////////////////////
+		case TXN_DAC0:
+		case TXN_DAC1:
+		case TXN_DAC2:
+			++m_txn;
+			break;
+		case TXN_DAC3:
+			m_txn = TXN_ADCMODE;
+			break;
 		}
+
+
 	}
 
 	// Called when the last transmitted byte has started sending and the
