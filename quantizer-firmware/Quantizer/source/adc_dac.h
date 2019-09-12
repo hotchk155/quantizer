@@ -61,6 +61,7 @@ private:
 	};
 	DAC_VALUE m_dac[4]; // the lowest 16 bits are DAC value.. bit 16 is a "ready" flag
 	volatile DAC_VALUE m_prev_dac[4];
+	uint8_t m_adc_init[5];
 
 	enum {
 		TX_BUF_SIZE = 16,
@@ -77,6 +78,11 @@ private:
 	volatile int m_rx_len;
 
 	enum {
+		TXN_ADCMODE,
+		TXN_ADCCFG0,
+		TXN_ADCCFG1,
+		TXN_ADCCFG2,
+		TXN_ADCCFG3,
 		TXN_DAC0,
 		TXN_DAC1,
 		TXN_DAC2,
@@ -94,9 +100,13 @@ public:
 		m_tx_pos = 0;
 		m_tx_len = 0;
 		m_rx_len = 0;
-		m_txn = TXN_DAC0;
+		m_txn = TXN_ADCMODE;
 		m_done = 0;
-
+		m_adc_init[0] = 0x88;
+		m_adc_init[1] = 0x87;
+		m_adc_init[2] = 0x97;
+		m_adc_init[3] = 0xA7;
+		m_adc_init[4] = 0xB7;
 	}
 
 
@@ -157,21 +167,32 @@ public:
 	}
 
 
-
 	void get_tx() {
-		int chan;
+		int idx;
 		switch(m_txn) {
+		case TXN_ADCMODE:
+		case TXN_ADCCFG0:
+		case TXN_ADCCFG1:
+		case TXN_ADCCFG2:
+		case TXN_ADCCFG3:
+			m_device = DEV_ADC;
+			idx = m_txn-TXN_ADCMODE;
+			m_tx[0] = m_adc_init[idx];
+			m_tx_len = 1;
+			break;
+
+		///////////////////////////////////////////
 		case TXN_DAC0:
 		case TXN_DAC1:
 		case TXN_DAC2:
 		case TXN_DAC3:
 			m_device = DEV_DAC;
-			chan = m_txn-TXN_DAC0;
+			idx = m_txn-TXN_DAC0;
 			// form the data word to be sent (3 bytes used)
-			if(m_dac[chan] != m_prev_dac[chan]) {
-				m_tx[0] = 0x10|chan;
-				m_tx[1] = (uint8_t)(m_dac[chan]>>8);
-				m_tx[2] = (uint8_t)(m_dac[chan]);
+			if(m_dac[idx] != m_prev_dac[idx]) {
+				m_tx[0] = 0x10|idx;
+				m_tx[1] = (uint8_t)(m_dac[idx]>>8);
+				m_tx[2] = (uint8_t)(m_dac[idx]);
 			}
 			else {
 				m_tx[0] = 0x20;
@@ -184,6 +205,8 @@ public:
 	}
 	void handle_rx() {
 		switch(m_txn) {
+
+		///////////////////////////////////////////
 		case TXN_DAC0:
 		case TXN_DAC1:
 		case TXN_DAC2:
@@ -192,6 +215,18 @@ public:
 		case TXN_DAC3:
 			m_txn = TXN_DAC0;
 			break;
+
+		///////////////////////////////////////////
+		case TXN_ADCMODE:
+		case TXN_ADCCFG0:
+		case TXN_ADCCFG1:
+		case TXN_ADCCFG2:
+			++m_txn;
+			break;
+		case TXN_ADCCFG3:
+			m_txn = TXN_ADCMODE;
+			break;
+
 		}
 	}
 
