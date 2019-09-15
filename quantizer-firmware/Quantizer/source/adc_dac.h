@@ -115,6 +115,7 @@ public:
 		m_adc_init[2] = 0x96;
 		m_adc_init[3] = 0xA6;
 		m_adc_init[4] = 0xB6;
+
 	}
 
 
@@ -157,7 +158,8 @@ public:
 	    spi_master_config_t masterConfig = {0};
 		SPI_MasterGetDefaultConfig(&masterConfig);
 	    masterConfig.polarity = kSPI_ClockPolarityActiveLow;
-	    masterConfig.baudRate_Bps = 1000000U;
+	    //masterConfig.baudRate_Bps = 1000000U;
+	    masterConfig.baudRate_Bps = 100000U;
 	    masterConfig.outputMode = kSPI_SlaveSelectAsGpio;
 		//masterConfig.phase = kSPI_ClockPhaseSecondEdge;
 	    SPI_MasterInit(SPI1, &masterConfig, CLOCK_GetFreq(kCLOCK_BusClk));
@@ -255,13 +257,16 @@ public:
 		case TXN_ADC1:
 		case TXN_ADC2:
 		case TXN_ADC3:
-			idx=m_txn-TXN_ADC0;
-			m_dac[idx] = (((ADC_VALUE)m_rx[2])<<8)|m_rx[3];
-			if(m_txn == TXN_ADC3) {
-				m_txn = TXN_DAC0;
-			}
-			else {
-				++m_txn;
+			{
+				byte adc_addr[4] = {0, 1, 3, 2};
+				idx=adc_addr[m_txn-TXN_ADC0];
+				m_dac[idx] = (((ADC_VALUE)m_rx[2])<<8)|m_rx[3];
+				if(m_txn == TXN_ADC3) {
+					m_txn = TXN_DAC0;
+				}
+				else {
+					++m_txn;
+				}
 			}
 			break;
 
@@ -272,7 +277,7 @@ public:
 			++m_txn;
 			break;
 		case TXN_DAC3:
-			m_txn = TXN_DAC0;
+			m_txn = TXN_ADC0;
 			break;
 		}
 
