@@ -71,7 +71,8 @@ static volatile bool slaveFinished = false;
 
 int main(void)
 {
-   uint32_t sourceClock = 0U;
+
+	uint32_t sourceClock = 0U;
 //    uint32_t i = 0U;
 //    uint32_t err = 0U;
 
@@ -118,12 +119,12 @@ int main(void)
 
     while(1) {
     	//ii ^=1;
-    	//g_adc_dac.set_dac(0, ii);
+    	g_adc_dac.set_dac(3, ii);
     	//g_adc_dac.set_dac(1, ii);
     	//g_adc_dac.set_dac(2, ii);
     	//g_adc_dac.set_dac(3, ii);
     	//g_adc_dac.update_dac();
-    	ii=ii+100;
+    	ii=ii+200;
     	if(ii>65535) ii=0;
 		g_clock.wait_ms(1);
     }/*

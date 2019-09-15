@@ -23,7 +23,7 @@ CDigitalIn<kGPIO_PORTD, 4> g_adc_sstp;
 
 CDigitalOut<kGPIO_PORTA, 6, 1> g_dac_csel; // initially high
 CDigitalIn<kGPIO_PORTA, 7> g_dac_ready;
-CDigitalOut<kGPIO_PORTD, 6, 0> g_dac_ldac;
+CDigitalOut<kGPIO_PORTD, 6, 1> g_dac_ldac;
 
 class CAdcDac {
 public:
@@ -176,6 +176,12 @@ public:
 	}
 
 
+
+
+
+
+
+
 	void get_tx() {
 		int idx;
 		switch(m_txn) {
@@ -212,7 +218,8 @@ public:
 			idx = m_txn-TXN_DAC0;
 			// form the data word to be sent (3 bytes used)
 			if(m_dac[idx] != m_prev_dac[idx]) {
-				m_tx[0] = 0x10|idx;
+				const byte dac_addr[4] = { 0x32, 0x34, 0x31, 0x38 };
+				m_tx[0] = dac_addr[idx];
 				m_tx[1] = (uint8_t)(m_dac[idx]>>8);
 				m_tx[2] = (uint8_t)(m_dac[idx]);
 			}
@@ -220,6 +227,9 @@ public:
 				m_tx[0] = 0x20;
 				m_tx[1] = 0x00;
 				m_tx[2] = 0x00;
+				//m_tx[0] = 0x03;
+				//m_tx[1] = 0x00;
+				//m_tx[2] = 0x80;
 			}
 			m_tx_len = 3;
 			break;
@@ -248,7 +258,7 @@ public:
 			idx=m_txn-TXN_ADC0;
 			m_dac[idx] = (((ADC_VALUE)m_rx[2])<<8)|m_rx[3];
 			if(m_txn == TXN_ADC3) {
-				m_txn = TXN_ADC0;
+				m_txn = TXN_DAC0;
 			}
 			else {
 				++m_txn;
@@ -262,7 +272,7 @@ public:
 			++m_txn;
 			break;
 		case TXN_DAC3:
-			m_txn = TXN_ADCMODE;
+			m_txn = TXN_DAC0;
 			break;
 		}
 
@@ -276,11 +286,14 @@ public:
 		// if there is no transaction in progress then we will
 		// kick off the next one
 		if(!m_tx_len) {
+
+			// prepare the next transaction
+			get_tx();
+
 			// select the device
 			csel(m_device);
 
-			// prepare the next transaction and queue the first byte
-			get_tx();
+			// queue the first byte
 			m_tx_pos = 1;
 			m_rx_len = 0;
 			SPI1->D = m_tx[0];
