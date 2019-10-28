@@ -70,55 +70,35 @@ static volatile bool masterFinished = false;
 static volatile bool slaveFinished = false;
 */
 
+void event(byte event, int param) {
+	if(event == EV_CV6) {
+		int index = ((long)g_apa102.NUM_LEDS * param)/(1<<12);
+		g_apa102.cls();
+		g_apa102.set(index, 0xFF);
+		g_apa102.refresh();
+	}
+}
 
 int main(void)
 {
 
-	uint32_t sourceClock = 0U;
-//    uint32_t i = 0U;
-//    uint32_t err = 0U;
-
-    /* Init the boards */
     BOARD_InitPins();
     BOARD_InitBootClocks();
     BOARD_InitBootPeripherals();
-
-//    BOARD_BootClockRUN();
     BOARD_InitDebugConsole();
-
-    //PRINTF("\r\nSPI board to board interrupt master example started!\r\n");
 
     g_clock.init();
 	g_clock.wait_ms(10);
 
-    //g_apa102.init();
+    g_apa102.init();
     //g_adc_dac.init();
     g_mcu_adc.init();
+    g_ui.init();
 
-    uint32_t xx[32] = {
-    		KEY_GRID,
-    		KEY_ROOT,
-    		KEY_SCALE,
-    		KEY_SHIFT,
-    		KEY_CHORD,
-    		KEY_SAVE,
-    		KEY_C,
-    		KEY_CSHARP,
-    		KEY_D,
-    		KEY_DSHARP,
-    		KEY_E,
-    		KEY_F,
-    		KEY_FSHARP,
-    		KEY_G,
-    		KEY_GSHARP,
-    		KEY_A,
-    		KEY_ASHARP,
-    		KEY_B
-    };
     int q=0;
     int ii=32000;
-	//g_apa102.cls();
-	//g_apa102.refresh();
+	g_apa102.cls();
+	g_apa102.refresh();
 
     while(1) {
 
@@ -126,6 +106,7 @@ int main(void)
     	if(g_clock.m_ms_tick) {
     		g_clock.m_ms_tick = 0;
     		g_mcu_adc.run();
+    		g_ui.run();
     	}
 
     }
