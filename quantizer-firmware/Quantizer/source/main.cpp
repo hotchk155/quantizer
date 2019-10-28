@@ -32,12 +32,13 @@
  * @file    MKE06Z128xxx4_Project.cpp
  * @brief   Application entry point.
  */
-#include <stdio.h>
+//#include <stdio.h>
+#include "MKE06Z4.h"
 #include "board.h"
 #include "peripherals.h"
 #include "pin_mux.h"
 #include "clock_config.h"
-#include "MKE06Z4.h"
+#include "fsl_common.h"
 #include "fsl_spi.h"
 #include "fsl_pit.h"
 
@@ -46,6 +47,7 @@
 #include "clock.h"
 #include "apa102.h"
 #include "adc_dac.h"
+#include "mcu_adc.h"
 #include "ui.h"
 
 /* TODO: insert other include files here. */
@@ -127,7 +129,9 @@ int main(void)
     	ii=ii+200;
     	if(ii>65535) ii=0;
 		g_clock.wait_ms(1);
-    }/*
+    }
+
+    /*
     	g_pin_trigout.set(q);
     	g_pin_led0.set(q);
     	g_pin_led1.set(!q);

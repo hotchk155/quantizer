@@ -36,9 +36,9 @@ typedef enum _adc_reference_voltage_source
 typedef enum _adc_clock_divider
 {
     kADC_ClockDivider1 = 0U, /*!< Divide ration = 1, and clock rate = Input clock. >*/
-    kADC_ClockDivider2 = 1U, /*!< Divide ration = 2, and clock rate = Input clock ¡Â 2. >*/
-    kADC_ClockDivider4 = 2U, /*!< Divide ration = 3, and clock rate = Input clock ¡Â 4. >*/
-    kADC_ClockDivider8 = 3U, /*!< Divide ration = 4, and clock rate = Input clock ¡Â 8. >*/
+    kADC_ClockDivider2 = 1U, /*!< Divide ration = 2, and clock rate = Input clock ï¿½ï¿½ 2. >*/
+    kADC_ClockDivider4 = 2U, /*!< Divide ration = 3, and clock rate = Input clock ï¿½ï¿½ 4. >*/
+    kADC_ClockDivider8 = 3U, /*!< Divide ration = 4, and clock rate = Input clock ï¿½ï¿½ 8. >*/
 } adc_clock_divider_t;
 
 /*!
@@ -308,5 +308,9 @@ static inline void ADC_SetHardwareTriggerMaskMode(ADC_Type *base, adc_hardware_t
     base->SC5 = mode << ADC_SC5_HTRGMASKSEL_SHIFT;
 }
 #endif /* FSL_FEATURE_ADC_HAS_SC5_REG */
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif /* _FSL_ADC_H_ */
