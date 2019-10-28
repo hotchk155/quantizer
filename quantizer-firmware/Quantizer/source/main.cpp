@@ -91,8 +91,9 @@ int main(void)
     g_clock.init();
 	g_clock.wait_ms(10);
 
-    g_apa102.init();
-    g_adc_dac.init();
+    //g_apa102.init();
+    //g_adc_dac.init();
+    g_mcu_adc.init();
 
     uint32_t xx[32] = {
     		KEY_GRID,
@@ -116,19 +117,17 @@ int main(void)
     };
     int q=0;
     int ii=32000;
-	g_apa102.cls();
-	g_apa102.refresh();
+	//g_apa102.cls();
+	//g_apa102.refresh();
 
     while(1) {
-    	//ii ^=1;
-    	//g_adc_dac.set_dac(3, ii);
-    	//g_adc_dac.set_dac(1, ii);
-    	//g_adc_dac.set_dac(2, ii);
-    	//g_adc_dac.set_dac(3, ii);
-    	//g_adc_dac.update_dac();
-    	ii=ii+200;
-    	if(ii>65535) ii=0;
-		g_clock.wait_ms(1);
+
+    	// once per ms tasks
+    	if(g_clock.m_ms_tick) {
+    		g_clock.m_ms_tick = 0;
+    		g_mcu_adc.run();
+    	}
+
     }
 
     /*
@@ -145,9 +144,6 @@ int main(void)
 		g_apa102.refresh();
     }*/
 
-    while (1)
-    {
-    }
 }
 
 /*

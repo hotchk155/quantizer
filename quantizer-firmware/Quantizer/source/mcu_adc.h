@@ -10,24 +10,43 @@
 
 #include "fsl_adc.h"
 /*
-#define DEMO_ADC_BASE ADC
-#define DEMO_ADC_IRQn ADC_IRQn
-#define EXAMPLE_ADC_IRQHandler ADC_IRQHandler
+PTC1	ADC0_SE9	CONTROL POT
+PTC2	ADC0_SE10	AMOUNT INPUT
+PTC3	ADC0_SE11	SCALE INPUT
+
 */
-#define DEMO_ADC_USER_CHANNEL 11
-
-volatile bool g_AdcConversionDoneFlag;
-volatile uint32_t g_AdcConversionValue;
-volatile uint32_t g_AdcInterruptCounter;
-
-/*
 
 class CMcuAdc {
-adc_config_t adcConfigStrcut;
-adc_channel_config_t adcChannelConfigStruct;
+	enum {
+		ADC_CHAN_KNOB = 9,
+		ADC_CHAN_CV1 = 10,
+		ADC_CHAN_CV2 = 11,
+	};
+public:
+	enum {
+		CH_KNOB,
+		CH_CV1,
+		CH_CV2,
+		CH_MAX
+	};
+	enum {
+		NO_RESULT = 0xFFFFFFFF
+	};
+private:
+	adc_config_t adcConfigStrcut;
+	adc_channel_config_t adcChannelConfigStruct;
+	int m_last_result[CH_MAX];
+	static const int m_adc_chan[CH_MAX];
+	int m_chan;
+	volatile byte m_adc_done;
+	volatile int m_adc_result;
 
 public:
+
 	void init() {
+
+		m_adc_done = 0;
+		m_chan = 0;
 
 	    EnableIRQ(ADC_IRQn);
 
@@ -38,39 +57,54 @@ public:
 	    //config->ResolutionMode = kADC_Resolution8BitMode;
 	    //config->clockSource = kADC_ClockSourceAlt0;
 	    ADC_GetDefaultConfig(&adcConfigStrcut);
+	    config->ResolutionMode = kADC_Resolution12BitMode;
 	    ADC_Init(ADC, &adcConfigStrcut);
 	    ADC_EnableHardwareTrigger(ADC, false);
 
 	    // Configure the user channel and interrupt.
-	    adcChannelConfigStruct.channelNumber = DEMO_ADC_USER_CHANNEL;
 	    adcChannelConfigStruct.enableInterruptOnConversionCompleted = true;
 	    adcChannelConfigStruct.enableContinuousConversion = false;
-	    g_AdcInterruptCounter = 0U;
+	    for(int i=0; i<CH_MAX; ++i) {
+	    	ADC_EnableAnalogInput(ADC, 1U << m_adc_chan[i], true);
+	    	m_last_result[i] = NO_RESULT;
+	    }
 
-	    ADC_EnableAnalogInput(ADC, 1U << DEMO_ADC_USER_CHANNEL, true);
+	    // kick off the first conversion
+	    adcChannelConfigStruct.channelNumber = m_adc_chan[m_chan];
+		ADC_SetChannelConfig(ADC, &adcChannelConfigStruct);
+
 	}
 
 	void run() {
-		g_AdcConversionDoneFlag = false;
+		if(m_adc_done) {
 
-		// When in software trigger mode, each conversion would be launched once calling the "ADC_ChannelConfigure()"
-		// function, which works like writing a conversion command and executing it. For another channel's conversion,
-		// just to change the "channelNumber" field in channel configuration structure, and call the function
-		// "ADC_ChannelConfigure()" again.
-		// Also, the "enableInterruptOnConversionCompleted" inside the channel configuration structure is a parameter
-		// for the conversion command. It takes affect just for the current conversion. If the interrupt is still
-		// required for the following conversion, it is necessary to assert the "enableInterruptOnConversionCompleted"
-		// every time for each command.
-		ADC_SetChannelConfig(ADC, &adcChannelConfigStruct);
-		while (!g_AdcConversionDoneFlag);
+		    m_last_result[m_chan] = m_adc_result;
+		    if(++m_chan >= CH_MAX) {
+		    	m_chan = 0;
+		    }
+
+		    m_adc_done = 0;
+		    adcChannelConfigStruct.channelNumber = m_adc_chan[m_chan];
+			ADC_SetChannelConfig(ADC, &adcChannelConfigStruct);
+		}
+	}
+	inline volatile void on_adc_done()
+	{
+		m_adc_result = ADC_GetChannelConversionValue(ADC);
+		m_adc_done = 1;
 	}
 };
-extern "C" void ADC_IRQHandler(void) {
-    g_AdcConversionDoneFlag = true;
-    g_AdcConversionValue = ADC_GetChannelConversionValue(ADC);
-    g_AdcInterruptCounter++;
-}*/
+const int CMcuAdc::m_adc_chan[CH_MAX] = {
+		ADC_CHAN_KNOB,
+		ADC_CHAN_CV1,
+		ADC_CHAN_CV2
+};
 
-//CMcuAdc g_mcu_adc;
+
+CMcuAdc g_mcu_adc;
+
+extern "C" void ADC_IRQHandler(void) {
+	g_mcu_adc.on_adc_done();
+}
 
 #endif
