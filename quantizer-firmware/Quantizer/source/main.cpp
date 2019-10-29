@@ -71,10 +71,10 @@ static volatile bool slaveFinished = false;
 */
 
 void event(byte event, int param) {
-	if(event == EV_CV6) {
-		int index = ((long)g_apa102.NUM_LEDS * param)/(1<<12);
+	if(event == EV_CV5) {
+		float index = (float)param/(1<<12);
 		g_apa102.cls();
-		g_apa102.set(index, 0xFF);
+		g_apa102.set_pos(index);
 		g_apa102.refresh();
 	}
 }
