@@ -44,6 +44,7 @@ private:
 
 public:
 
+
 	void init() {
 
 		m_adc_done = 0;

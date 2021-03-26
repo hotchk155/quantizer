@@ -71,18 +71,21 @@ static volatile bool slaveFinished = false;
 */
 
 void event(byte event, int param) {
+	/*
 	if(event == EV_CV5) {
 		float index = (float)param/(1<<12);
 		g_apa102.cls();
 		g_apa102.set_pos(index);
 		g_apa102.refresh();
 	}
+	*/
 }
 
 int main(void)
 {
 
-    BOARD_InitPins();
+
+	BOARD_InitPins();
     BOARD_InitBootClocks();
     BOARD_InitBootPeripherals();
     BOARD_InitDebugConsole();
@@ -91,22 +94,41 @@ int main(void)
 	g_clock.wait_ms(10);
 
     g_apa102.init();
-    //g_adc_dac.init();
+    g_adc_dac.init();
     g_mcu_adc.init();
     g_ui.init();
 
     int q=0;
     int ii=32000;
-	g_apa102.cls();
-	g_apa102.refresh();
+	//g_apa102.cls();
+	//g_apa102.refresh();
 
+	short pp=0;
+	int n=0;
     while(1) {
-
+    	int note[8] = {0,2,4,5,7,9,11,12};
     	// once per ms tasks
     	if(g_clock.m_ms_tick) {
     		g_clock.m_ms_tick = 0;
-    		g_mcu_adc.run();
-    		g_ui.run();
+    		//g_mcu_adc.run();
+    		//g_ui.run();
+    		if(pp<200) {
+    			++pp;
+    		}
+    		else {
+/*    			if(n) {
+    				g_adc_dac.set_dac_note(0,24);
+    			}
+    			else {
+    				g_adc_dac.set_dac_note(0,36);
+    			}
+    			n=!n;*/
+    			g_adc_dac.set_dac_note(0,  24+note[n]);
+    			if(++n>=8) {
+    				n=0;
+    			}
+    			pp=0;
+    		}
     	}
 
     }

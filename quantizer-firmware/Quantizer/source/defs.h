@@ -69,6 +69,13 @@ enum {
 	EV_CV6 // SCALE
 };
 
+typedef enum {
+	short raw_adc;		// raw 12 or 16 bit ADC value
+	int note;			// scaled note value (MIDI note + part notes left shifted 16)
+	int volts;			// scaled volts value (left shifted 16)
+	byte is_changed;	// whether the value has changed. Manual reset
+} ANALOG_INPUT;
+
 //
 // FUNCTION PROTOTYPES
 //

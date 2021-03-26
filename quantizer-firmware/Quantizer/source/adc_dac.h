@@ -8,6 +8,7 @@
 #ifndef ADC_DAC_H_
 #define ADC_DAC_H_
 
+#include "defs.h"
 //ADC MAX1303
 //DAC MAX5134
 
@@ -177,11 +178,26 @@ public:
 		}
 	}
 
+	// Note is MIDI note << 16
+#define DAC_UNITS_PER_OCTAVE 	8000
+	void set_dac_note(byte which, int note) {
+		// 16-bit DAC - full range 0xFFFF is equal to 4.095V, scaled *2 by output buffer to 8.192V
+		// each DAC unit is 8.192/65535 = 1/8000 = 0.125mV
+		// single semitone = (1.000/12)/0.000125 = 666.6666666 DAC units
 
 
+		// DAC units per octave = 65536/8.192 = 8000
+		int dac = ((((long)note*8000))/(12));
+		set_dac(which, dac);
+
+	}
 
 
-
+	byte update(ANALOG_INPUT *inputs) {
+		for(int i=0; i<4; ++i) {
+			if(inputs[i].raw_)
+		}
+	}
 
 
 	void get_tx() {
@@ -260,7 +276,7 @@ public:
 			{
 				byte adc_addr[4] = {0, 1, 3, 2};
 				idx=adc_addr[m_txn-TXN_ADC0];
-				m_dac[idx] = (((ADC_VALUE)m_rx[2])<<8)|m_rx[3];
+				m_adc[idx] = (((ADC_VALUE)m_rx[2])<<8)|m_rx[3];
 				if(m_txn == TXN_ADC3) {
 					m_txn = TXN_DAC0;
 				}

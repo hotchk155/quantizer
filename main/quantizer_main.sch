@@ -18799,22 +18799,22 @@ EAGLE CAD Libraries on element14&lt;/a&gt;</description>
 <part name="R2" library="rcl" deviceset="R-EU_" device="R0805"/>
 <part name="R3" library="rcl" deviceset="R-EU_" device="R0805"/>
 <part name="R1" library="rcl" deviceset="R-EU_" device="R0805"/>
-<part name="C1" library="rcl" deviceset="C-EU" device="C0805"/>
+<part name="C1" library="rcl" deviceset="C-EU" device="C0805" value="200p"/>
 <part name="OUT3" library="thonkiconn" deviceset="WQP-PJ301M-12_JACK" device=""/>
 <part name="R5" library="rcl" deviceset="R-EU_" device="R0805"/>
 <part name="R6" library="rcl" deviceset="R-EU_" device="R0805"/>
 <part name="R4" library="rcl" deviceset="R-EU_" device="R0805"/>
-<part name="C2" library="rcl" deviceset="C-EU" device="C0805"/>
+<part name="C2" library="rcl" deviceset="C-EU" device="C0805" value="200p"/>
 <part name="OUT1" library="thonkiconn" deviceset="WQP-PJ301M-12_JACK" device=""/>
 <part name="R11" library="rcl" deviceset="R-EU_" device="R0805"/>
 <part name="R10" library="rcl" deviceset="R-EU_" device="R0805"/>
 <part name="R12" library="rcl" deviceset="R-EU_" device="R0805"/>
-<part name="C6" library="rcl" deviceset="C-EU" device="C0805"/>
+<part name="C6" library="rcl" deviceset="C-EU" device="C0805" value="200p"/>
 <part name="OUT2" library="thonkiconn" deviceset="WQP-PJ301M-12_JACK" device=""/>
 <part name="R8" library="rcl" deviceset="R-EU_" device="R0805"/>
 <part name="R7" library="rcl" deviceset="R-EU_" device="R0805"/>
 <part name="R9" library="rcl" deviceset="R-EU_" device="R0805"/>
-<part name="C4" library="rcl" deviceset="C-EU" device="C0805"/>
+<part name="C4" library="rcl" deviceset="C-EU" device="C0805" value="200p"/>
 <part name="R26" library="rcl" deviceset="R-EU_" device="R0805"/>
 <part name="R27" library="rcl" deviceset="R-EU_" device="R0805"/>
 <part name="R22" library="rcl" deviceset="R-EU_" device="R0805"/>
@@ -18853,18 +18853,18 @@ EAGLE CAD Libraries on element14&lt;/a&gt;</description>
 <part name="IN3" library="thonkiconn" deviceset="WQP-PJ301M-12_JACK" device=""/>
 <part name="POT1" library="jasons_stuff" deviceset="ALPS_POT_SMALL" device=""/>
 <part name="IC6" library="linear" deviceset="TL074" device="D"/>
-<part name="R33" library="rcl" deviceset="R-EU_" device="R0805"/>
-<part name="R40" library="rcl" deviceset="R-EU_" device="R0805"/>
-<part name="R41" library="rcl" deviceset="R-EU_" device="R0805"/>
-<part name="R34" library="rcl" deviceset="R-EU_" device="R0805"/>
+<part name="R33" library="rcl" deviceset="R-EU_" device="R0805" value="120k"/>
+<part name="R40" library="rcl" deviceset="R-EU_" device="R0805" value="22k"/>
+<part name="R41" library="rcl" deviceset="R-EU_" device="R0805" value="100k"/>
+<part name="R34" library="rcl" deviceset="R-EU_" device="R0805" value="22k"/>
 <part name="SUPPLY7" library="supply2" deviceset="+12V" device=""/>
 <part name="SUPPLY8" library="supply2" deviceset="+12V" device=""/>
 <part name="SUPPLY9" library="supply2" deviceset="-12V" device=""/>
 <part name="C23" library="rcl" deviceset="C-EU" device="C0805"/>
 <part name="C20" library="rcl" deviceset="C-EU" device="C0805"/>
 <part name="IN6" library="thonkiconn" deviceset="WQP-PJ301M-12_JACK" device=""/>
-<part name="R35" library="rcl" deviceset="R-EU_" device="R0805"/>
-<part name="R36" library="rcl" deviceset="R-EU_" device="R0805"/>
+<part name="R35" library="rcl" deviceset="R-EU_" device="R0805" value="120k"/>
+<part name="R36" library="rcl" deviceset="R-EU_" device="R0805" value="22k"/>
 <part name="C22" library="rcl" deviceset="C-EU" device="C0805"/>
 <part name="SUPPLY10" library="supply2" deviceset="AGND" device=""/>
 <part name="SUPPLY11" library="supply2" deviceset="AGND" device=""/>
@@ -19046,6 +19046,8 @@ above 0 for MCU ADC ins)</text>
 <text x="-269.24" y="-38.1" size="5.08" layer="91">CONTROL POT</text>
 <text x="109.22" y="-22.86" size="5.08" layer="91">HEADERS</text>
 <text x="43.434" y="-34.798" size="3.81" layer="91">EEPROM 8KBIT</text>
+<text x="-170.18" y="-11.684" size="1.778" layer="97">2.16v</text>
+<text x="-131.572" y="-12.7" size="1.778" layer="97">2.16v</text>
 </plain>
 <instances>
 <instance part="IC5" gate="G$1" x="-40.64" y="68.58"/>
@@ -19782,7 +19784,7 @@ above 0 for MCU ADC ins)</text>
 <junction x="-190.5" y="109.22"/>
 </segment>
 </net>
-<net name="CVIN4" class="0">
+<net name="MCUADC3" class="0">
 <segment>
 <pinref part="R34" gate="G$1" pin="2"/>
 <wire x1="-177.8" y1="116.84" x2="-162.56" y2="116.84" width="0.1524" layer="91"/>
@@ -19822,7 +19824,7 @@ above 0 for MCU ADC ins)</text>
 <junction x="-190.5" y="63.5"/>
 </segment>
 </net>
-<net name="CVIN5" class="0">
+<net name="MCUADC2" class="0">
 <segment>
 <pinref part="R36" gate="G$1" pin="2"/>
 <wire x1="-165.1" y1="71.12" x2="-162.56" y2="71.12" width="0.1524" layer="91"/>
@@ -20079,7 +20081,7 @@ above 0 for MCU ADC ins)</text>
 <junction x="35.56" y="-17.78"/>
 </segment>
 </net>
-<net name="CVIN6" class="0">
+<net name="MCUADC1" class="0">
 <segment>
 <pinref part="POT1" gate="G$1" pin="W"/>
 <wire x1="-248.92" y1="-7.62" x2="-246.38" y2="-7.62" width="0.1524" layer="91"/>
