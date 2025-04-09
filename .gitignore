@@ -77,3 +77,10 @@ old/*.*
 Backup_of_*.cdr
 
 cvocfg/node_modules
+
+##############
+## MCUExpresso
+##############
+*.log
+main/quantizer_main.b##
+main/quantizer_main.s##

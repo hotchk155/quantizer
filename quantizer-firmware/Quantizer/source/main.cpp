@@ -32,12 +32,13 @@
  * @file    MKE06Z128xxx4_Project.cpp
  * @brief   Application entry point.
  */
-#include <stdio.h>
+//#include <stdio.h>
+#include "MKE06Z4.h"
 #include "board.h"
 #include "peripherals.h"
 #include "pin_mux.h"
 #include "clock_config.h"
-#include "MKE06Z4.h"
+#include "fsl_common.h"
 #include "fsl_spi.h"
 #include "fsl_pit.h"
 
@@ -45,6 +46,8 @@
 #include "digital_out.h"
 #include "clock.h"
 #include "apa102.h"
+#include "adc_dac.h"
+#include "mcu_adc.h"
 #include "ui.h"
 
 /* TODO: insert other include files here. */
@@ -67,49 +70,70 @@ static volatile bool masterFinished = false;
 static volatile bool slaveFinished = false;
 */
 
+void event(byte event, int param) {
+	/*
+	if(event == EV_CV5) {
+		float index = (float)param/(1<<12);
+		g_apa102.cls();
+		g_apa102.set_pos(index);
+		g_apa102.refresh();
+	}
+	*/
+}
 
 int main(void)
 {
-    spi_master_config_t masterConfig = {0};
-    uint32_t sourceClock = 0U;
-//    uint32_t i = 0U;
-//    uint32_t err = 0U;
 
-    /* Init the boards */
-    BOARD_InitPins();
+
+	BOARD_InitPins();
     BOARD_InitBootClocks();
     BOARD_InitBootPeripherals();
-
-//    BOARD_BootClockRUN();
     BOARD_InitDebugConsole();
 
-    //PRINTF("\r\nSPI board to board interrupt master example started!\r\n");
-
     g_clock.init();
-    g_apa102.init();
+	g_clock.wait_ms(10);
 
-    uint32_t xx[32] = {
-    		KEY_GRID,
-    		KEY_ROOT,
-    		KEY_SCALE,
-    		KEY_SHIFT,
-    		KEY_CHORD,
-    		KEY_SAVE,
-    		KEY_C,
-    		KEY_CSHARP,
-    		KEY_D,
-    		KEY_DSHARP,
-    		KEY_E,
-    		KEY_F,
-    		KEY_FSHARP,
-    		KEY_G,
-    		KEY_GSHARP,
-    		KEY_A,
-    		KEY_ASHARP,
-    		KEY_B
-    };
+    g_apa102.init();
+    g_adc_dac.init();
+    g_mcu_adc.init();
+    g_ui.init();
+
     int q=0;
+    int ii=32000;
+	//g_apa102.cls();
+	//g_apa102.refresh();
+
+	short pp=0;
+	int n=0;
     while(1) {
+    	int note[8] = {0,2,4,5,7,9,11,12};
+    	// once per ms tasks
+    	if(g_clock.m_ms_tick) {
+    		g_clock.m_ms_tick = 0;
+    		//g_mcu_adc.run();
+    		//g_ui.run();
+    		if(pp<200) {
+    			++pp;
+    		}
+    		else {
+/*    			if(n) {
+    				g_adc_dac.set_dac_note(0,24);
+    			}
+    			else {
+    				g_adc_dac.set_dac_note(0,36);
+    			}
+    			n=!n;*/
+    			g_adc_dac.set_dac_note(0,  24+note[n]);
+    			if(++n>=8) {
+    				n=0;
+    			}
+    			pp=0;
+    		}
+    	}
+
+    }
+
+    /*
     	g_pin_trigout.set(q);
     	g_pin_led0.set(q);
     	g_pin_led1.set(!q);
@@ -121,11 +145,8 @@ int main(void)
 			g_apa102.set(i, (k&(xx[i]))? 0x70:0);
 		}
 		g_apa102.refresh();
-    }
+    }*/
 
-    while (1)
-    {
-    }
 }
 
 /*

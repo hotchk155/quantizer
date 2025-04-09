@@ -85,6 +85,17 @@ public:
 			set(i,0);
 		}
 	}
+
+	// set a position (0.0 <= pos <= 1.0)
+	void set_pos(float pos) {
+		pos *= NUM_LEDS;
+		int base = (int)pos;
+		int upper = 100*(pos - base);
+		int lower = 100-upper;
+		set(base, lower<<16);
+		set(base+1, upper<<16);
+	}
+
 	void refresh() {
 		tx_prep();
    	    SPI0->C1 |= SPI_C1_SPTIE_MASK;

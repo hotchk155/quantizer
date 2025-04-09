@@ -34,14 +34,6 @@
 	#define DBGLOG2(s,t,u)
 #endif
 
-enum {
-	EV_NONE,
-	EV_KEY_PRESS,
-	EV_KEY_RELEASE,
-	EV_KEY_CLICK,
-	EV_KEY_HOLD,
-};
-
 typedef unsigned char byte;
 
 #define PORTA_BASE 0
@@ -63,6 +55,32 @@ typedef unsigned char byte;
 #define SET_GPIOB(mask) ((GPIO_Type *)GPIOB_BASE)->PSOR = (mask)
 #define CLR_GPIOB(mask) ((GPIO_Type *)GPIOB_BASE)->PCOR = (mask)
 #define READ_GPIOB(mask) (((GPIO_Type *)GPIOB_BASE)->PDIR & (mask))
+
+enum {
+	EV_NONE,
+	EV_KEYDOWN,
+	EV_KEYUP,
+	EV_CV0,	// GRID
+	EV_CV1, // ROOT
+	EV_CV2, // IN
+	EV_CV3, // CHORD
+	EV_CV4, // POT
+	EV_CV5, // AMOUNT
+	EV_CV6 // SCALE
+};
+
+typedef enum {
+	short raw_adc;		// raw 12 or 16 bit ADC value
+	int note;			// scaled note value (MIDI note + part notes left shifted 16)
+	int volts;			// scaled volts value (left shifted 16)
+	byte is_changed;	// whether the value has changed. Manual reset
+} ANALOG_INPUT;
+
+//
+// FUNCTION PROTOTYPES
+//
+extern void event(byte event, int param);
+
 
 
 #endif /* DEFS_H_ */

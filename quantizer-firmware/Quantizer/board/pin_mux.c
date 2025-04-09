@@ -63,6 +63,7 @@ BOARD_InitPins:
   - {pin_num: '4', peripheral: GPIOB, signal: 'GPIO, 26', pin_signal: PTH2/KBI1_P26/BUSOUT/FTM1_CH0/CAN0_RX, pullup_enable: enable}
   - {pin_num: '26', peripheral: GPIOA, signal: 'GPIO, 6', pin_signal: PTA6/KBI0_P6/FTM2_FLT1/ACMP1_IN0/ADC0_SE2}
   - {pin_num: '25', peripheral: GPIOA, signal: 'GPIO, 7', pin_signal: PTA7/KBI0_P7/FTM2_FLT2/ACMP1_IN1/ADC0_SE3}
+  - {pin_num: '17', peripheral: GPIOA, signal: 'GPIO, 30', pin_signal: PTD6/KBI0_P30/UART2_RX}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
